@@ -48,11 +48,12 @@ std::string stringToLower( std::string s ) {
 }
 
 void ommandLineSyntax( void ) {
-    printf( "Syntax: PassWordgenerator [options] number\n" );
+    printf( "Syntax: PassWordGenerator [options] number\n" );
     printf( "Note   :                                The command line argemant is not case synsteve\n" );
     printf( "Options:\n" );
     printf( "    -h,--help                         : Show syntax help\n" );
     printf( "    -l,--length                       : Length number for characters for password, for example \"-l 5\" or \"-l=5\"\n" );
+    printf( "    -p,--password                     : Password number that will be G, for example \"-l 5\" or \"-l=5\"\n" );
 }
 
 bool stringIsNumber( const char *str ) {
