@@ -1,3 +1,4 @@
+#include <map>
 #include <vector>
 #include <random>
 #include <ctype.h>
@@ -35,27 +36,47 @@ char_array charset( void ) {
                 });
 };
 
+/**
+ * @brief randomString
+ * @param length
+ * @param rand_char
+ * @return
+ */
 std::string randomString( size_t length, std::function< char( void ) > rand_char ) {
     std::string str( length, 0 );
     std::generate_n( str.begin(), length, rand_char );
     return str;
 }
 
+/**
+ * @brief stringToLower
+ * @param s
+ * @return
+ */
 std::string stringToLower( std::string s ) {
     std::transform( s.begin(), s.end(), s.begin(),
                     []( unsigned char c ){ return std::tolower( c ); } );
     return s;
 }
 
+/**
+ * @brief ommandLineSyntax
+ */
 void ommandLineSyntax( void ) {
     printf( "Syntax: PassWordGenerator [options] number\n" );
     printf( "Note   :                                The command line argemant is not case synsteve\n" );
     printf( "Options:\n" );
     printf( "    -h,--help                         : Show syntax help\n" );
-    printf( "    -l,--length                       : Length number for characters for password, for example \"-l 5\" or \"-l=5\"\n" );
     printf( "    -p,--password                     : Password number that will be G, for example \"-l 5\" or \"-l=5\"\n" );
+    printf( "                                        Note : Password number is 1 by default\n" );
+    printf( "    -l,--length                       : Length number for characters for password, for example \"-l 5\" or \"-l=5\"\n" );
 }
 
+/**
+ * @brief stringIsNumber
+ * @param str
+ * @return
+ */
 bool stringIsNumber( const char *str ) {
     bool funReturnVal = false;
     for ( int number = 0 ; str[ number ] != '\0' ; number++ ) { //isdigit()
@@ -65,6 +86,24 @@ bool stringIsNumber( const char *str ) {
     return funReturnVal;
 }
 
+/**
+ * @brief commandLineParser
+ * @param argc
+ * @param argv
+ * @return
+ */
+std::map< char, size_t > commandLineParser( int argc, char **argv ) {
+    std::map< char, size_t > funReturnVal = std::map< char, size_t >();
+    // TODO : Code me.
+    return funReturnVal;
+}
+
+/**
+ * @brief main
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main( int argc, char **argv ) {
 
     //Independent of character set,
@@ -88,8 +127,7 @@ int main( int argc, char **argv ) {
                         char *tmpStr = strpbrk( argv[ argcNumber ], "=" );
                         if ( tmpStr ) {
                             tmpStr += strspn( tmpStr, "=" ); // skip separator
-                            // TODO : test if it's number or not
-                            if ( stringIsNumber( tmpStr ) ) {
+                            if ( stringIsNumber( tmpStr ) ) /* Test if it's number or not */ {
                                 length = atoi( tmpStr );
                                 printf( "%s\n", randomString( length, randchar ).c_str() );
                             } else {
@@ -103,10 +141,11 @@ int main( int argc, char **argv ) {
                             ||
                             strcmp( stringToLower( argv[ argcNumber ] ).c_str(), "--help" ) ) {
                     ommandLineSyntax();
+                } else if (0) {
                 } else {
                 }
             } else {
-                printf( "Warning : This message is only sample PassWord. %s\n", randomString( length, randchar ).c_str() );
+                printf( "Warning : This message is only sample password. %s\n", randomString( length, randchar ).c_str() );
             }
         }
     } else {
