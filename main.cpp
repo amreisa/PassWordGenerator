@@ -1,8 +1,10 @@
+// C header files
+#include <ctype.h>
+#include <string.h>
+// C++ Header files
 #include <map>
 #include <vector>
 #include <random>
-#include <ctype.h>
-#include <string.h>
 #include <iostream>
 #include <algorithm>  //for std::generate_n
 #include <functional> //for std::function
@@ -20,12 +22,14 @@ char_array charset( void ) {
                  'F','G','H','I','J',
                  'K','L','M','N','O',
                  'P','Q','R','S','T',
-                 'U','V','W','X','Y','Z',
+                 'U','V','W','X','Y',
+                 'Z',
                  'a','b','c','d','e',
                  'f','g','h','i','j',
                  'k','l','m','n','o',
                  'p','q','r','s','t',
-                 'u','v','w','x','y','z',
+                 'u','v','w','x','y',
+                 'z',
                  '!','\"','#','$','%',
                  '&','\\',',','(',')',
                  '*','+',',','-','.',
@@ -49,11 +53,11 @@ std::string randomString( size_t length, std::function< char( void ) > rand_char
 }
 
 /**
- * @brief stringToLower
+ * @brief strToLower
  * @param s
  * @return
  */
-std::string stringToLower( std::string s ) {
+std::string strToLower( std::string s ) {
     std::transform( s.begin(), s.end(), s.begin(),
                     []( unsigned char c ){ return std::tolower( c ); } );
     return s;
@@ -67,9 +71,10 @@ void ommandLineSyntax( void ) {
     printf( "Note   :                                The command line argemant is not case synsteve\n" );
     printf( "Options:\n" );
     printf( "    -h,--help                         : Show syntax help\n" );
-    printf( "    -p,--password                     : Password number that will be G, for example \"-l 5\" or \"-l=5\"\n" );
+    printf( "    -p,--password                     : Password number that will be Generated, for example \"-l 5\" or \"-l=5\"\n" );
     printf( "                                        Note : Password number is 1 by default\n" );
     printf( "    -l,--length                       : Length number for characters for password, for example \"-l 5\" or \"-l=5\"\n" );
+    printf( "    -o,--output FILENAME              : Instead of using the standard output, use this filename for output\n" );
 }
 
 /**
@@ -87,15 +92,119 @@ bool stringIsNumber( const char *str ) {
 }
 
 /**
+ * @brief getArgValue
+ * @param arg
+ * @return
+ */
+char *getArgValue( const char *arg ) {
+    char *funReturnVal = NULL;
+    char *tmpStr = NULL;
+
+    if ( strstr( arg, "=" ) ) {
+        tmpStr = strpbrk( ( char* )arg, "=" );
+        if ( tmpStr ) {
+            tmpStr += strspn( tmpStr, "=" ); // skip separator
+            funReturnVal = tmpStr;
+        } else {
+            printf( "Error number %d : The value can't be empty.\n", __LINE__ );
+        }
+    } else {
+        tmpStr = strpbrk( ( char* )arg, " " );
+        if ( tmpStr ) {
+            tmpStr += strspn( tmpStr, " " ); // skip separator
+            //passwordLength = atoi( tmpStr );
+            /*funReturnVal['l']*/ funReturnVal = tmpStr; // l for length
+            //printf( "%s\n", randomString( passwordLength, randchar ).c_str() );
+        } else {
+            printf( "Error number %d : The value can't be empty.\n", __LINE__ );
+        }
+    }
+    return funReturnVal;
+}
+
+/**
  * @brief commandLineParser
  * @param argc
  * @param argv
  * @return
  */
-std::map< char, size_t > commandLineParser( int argc, char **argv ) {
-    std::map< char, size_t > funReturnVal = std::map< char, size_t >();
+std::map< char, char* > commandLineParser( int argc, char **argv ) {
+    std::map< char, char* > funReturnVal = std::map< char, char* >();
     // TODO : Code me.
+
+    auto passwordNumber = 1; // -p
+    auto passwordLength = 5; // -l
+    auto outPut = "(stdio)"; // -o
+
+    char *tmpStr = NULL;
+
+    if ( argc > 1 ) {
+        for ( int argcNumber = 1 ; argcNumber < argc ; argcNumber++ ) {
+            if ( strstr( argv[ argcNumber ], "--" ) || strstr( argv[ argcNumber ], "-" ) ) {
+                //#ifdef __gnu_debug
+                printf( "This argv[%d] is command arg : it have \"%s\".\n", argcNumber, argv[ argcNumber ] );
+                //#endif
+                if ( strstr( strToLower( argv[ argcNumber ] ).c_str(), "-o" ) || strstr( strToLower( argv[ argcNumber ] ).c_str(), "--output" ) ) {
+                    tmpStr = getArgValue( argv[ argcNumber ] );
+                    // TODO : Test if vailed file name;
+                    funReturnVal[ 'o' ] = tmpStr; // o for output
+                } else if ( strstr( strToLower( argv[ argcNumber ] ).c_str(), "-l" ) || strstr( strToLower( argv[ argcNumber ] ).c_str(), "--length" ) ) {
+                    tmpStr = getArgValue( argv[ argcNumber ] );
+
+                    if ( stringIsNumber( tmpStr ) ) /* Test if it's number or not */ {
+                        funReturnVal[ 'l' ] = tmpStr; // l for length
+                        //printf( "%s\n", randomString( passwordLength, randchar ).c_str() );
+                    } else {
+                        funReturnVal.clear();
+                        printf( "Error number %d : The value must be number.\n", __LINE__ );
+                        return funReturnVal;
+                    }
+                } else if ( strstr( strToLower( argv[ argcNumber ] ).c_str(), "-p" ) || strstr( strToLower( argv[ argcNumber ] ).c_str(), "--password" ) ) {
+                    tmpStr = getArgValue( argv[ argcNumber ] );
+
+                    if ( stringIsNumber( tmpStr ) ) /* Test if it's number or not */ {
+                        funReturnVal[ 'p' ] = tmpStr; // p for password
+                    } else {
+                        funReturnVal.clear();
+                        printf( "Error number %d : The value must be number.\n", __LINE__ );
+                        return funReturnVal;
+                    }
+                } else if ( strcmp( strToLower( argv[ argcNumber ] ).c_str(), "-h" ) || strcmp( strToLower( argv[ argcNumber ] ).c_str(), "--help" ) ) {
+                    ommandLineSyntax();
+                } else {
+                }
+            } else {
+                //                printf( "Warning : This message is only sample password. %s\n", randomString( passwordLength, randchar ).c_str() );
+            }
+        }
+    } else {
+        ommandLineSyntax();
+    }
+
     return funReturnVal;
+}
+
+/**
+ * @brief doWork
+ * @param values
+ * @return
+ */
+bool doWork( std::map< char, char* > values ) {
+    bool funreturnVal = false;
+
+    if ( !values.empty() ) {
+        //Independent of character set,
+        //Distribution can be changed
+        //Output is non-deterministic
+        const auto ch_set = charset();
+        std::default_random_engine rng( std::random_device{}() );
+        std::uniform_int_distribution<> dist( 0, ch_set.size() -1 );
+        auto randchar = [ ch_set, &dist, &rng ](){ return ch_set[ dist( rng ) ]; };
+    } else {
+        // Error
+    }
+
+    return funreturnVal;
 }
 
 /**
@@ -105,52 +214,5 @@ std::map< char, size_t > commandLineParser( int argc, char **argv ) {
  * @return
  */
 int main( int argc, char **argv ) {
-
-    //Independent of character set,
-    //Distribution can be changed
-    //Output is non-deterministic
-    const auto ch_set = charset();
-    std::default_random_engine rng( std::random_device{}() );
-    std::uniform_int_distribution<> dist( 0, ch_set.size() -1 );
-    auto randchar = [ ch_set, &dist, &rng ](){ return ch_set[ dist( rng ) ]; };
-    auto length = 5;
-    if ( argc > 1 ) {
-        for ( int argcNumber = 1 ; argcNumber < argc ; argcNumber++ ) {
-
-            if ( strstr( argv[ argcNumber ], "--" ) || strstr( argv[ argcNumber ], "-" ) ) {
-                printf( "This argv[%d] is command arg : it have \"%s\".\n", argcNumber, argv[ argcNumber ] );
-
-                if ( strstr( stringToLower( argv[ argcNumber ] ).c_str(), "-l" )
-                     ||
-                     strstr( stringToLower( argv[ argcNumber ] ).c_str(), "--length" ) ) {
-                    if ( strstr( argv[ argcNumber ], "=" ) ) {
-                        char *tmpStr = strpbrk( argv[ argcNumber ], "=" );
-                        if ( tmpStr ) {
-                            tmpStr += strspn( tmpStr, "=" ); // skip separator
-                            if ( stringIsNumber( tmpStr ) ) /* Test if it's number or not */ {
-                                length = atoi( tmpStr );
-                                printf( "%s\n", randomString( length, randchar ).c_str() );
-                            } else {
-                                printf( "Error number %d : The value must be number.\n", __LINE__ );
-                            }
-                        }
-                    } else {
-                        // TODO : Get What after 'space' and test if it's number or not
-                    }
-                } else if ( strcmp( stringToLower( argv[ argcNumber ] ).c_str(), "-h" )
-                            ||
-                            strcmp( stringToLower( argv[ argcNumber ] ).c_str(), "--help" ) ) {
-                    ommandLineSyntax();
-                } else if (0) {
-                } else {
-                }
-            } else {
-                printf( "Warning : This message is only sample password. %s\n", randomString( length, randchar ).c_str() );
-            }
-        }
-    } else {
-        ommandLineSyntax();
-    }
-
-    return 0;
+    return doWork( commandLineParser( argc, argv ) );
 }
